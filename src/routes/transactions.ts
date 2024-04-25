@@ -2,34 +2,69 @@ import { FastifyInstance } from 'fastify'
 import { knex } from '../database'
 import { z } from 'zod'
 import { randomUUID } from 'node:crypto'
+import { checkSessionIdExists } from '../middlewares/check-session-id'
 
 const sevenDays = 60 * 60 * 24 * 7
 
 export async function transactionsRoutes(app: FastifyInstance) {
-  app.get('/', async () => {
-    const transactions = await knex('transactions').select('*')
+  app.get(
+    '/',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request, reply) => {
+      const { sessionId } = request.cookies
 
-    return {
-      transactions,
-    }
-  })
+      const transactions = await knex('transactions')
+        .where('session_id', sessionId)
+        .select('*')
 
-  app.get('/:id', async (request) => {
-    const getTransactionParamsSchema = z.object({
-      id: z.string().uuid(),
-    })
+      return {
+        transactions,
+      }
+    },
+  )
 
-    const { id } = getTransactionParamsSchema.parse(request.params)
-    const transaction = await knex('transactions').where('id', id).first()
+  app.get(
+    '/:id',
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request, reply) => {
+      const { sessionId } = request.cookies
 
-    return {
-      transaction,
-    }
-  })
+      const getTransactionParamsSchema = z.object({
+        id: z.string().uuid(),
+      })
 
-  app.get('/sumary', async () => {
-    return await knex('transactions').sum('amount', { as: 'amount' }).first()
-  })
+      const { id } = getTransactionParamsSchema.parse(request.params)
+      const transaction = await knex('transactions')
+        .where({
+          id,
+          session_id: sessionId,
+        })
+        .first()
+
+      return {
+        transaction,
+      }
+    },
+  )
+
+  app.get(
+    '/sumary',
+
+    {
+      preHandler: [checkSessionIdExists],
+    },
+    async (request, reply) => {
+      const { sessionId } = request.cookies
+      return await knex('transactions')
+        .where('session_id', sessionId)
+        .sum('amount', { as: 'amount' })
+        .first()
+    },
+  )
 
   app.post('/', async (request, reply) => {
     const createTransactionBosySchema = z.object({
