@@ -25,6 +25,10 @@ export async function transactionsRoutes(app: FastifyInstance) {
     }
   })
 
+  app.get('/sumary', async () => {
+    return await knex('transactions').sum('amount', { as: 'amount' }).first()
+  })
+
   app.post('/', async (request, reply) => {
     const createTransactionBosySchema = z.object({
       title: z.string(),
