@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, expect, test } from 'vitest'
+import { afterAll, beforeAll, expect, it, test } from 'vitest'
 import request from 'supertest'
 import { app } from '../src/app'
 
@@ -10,7 +10,7 @@ afterAll(async () => {
   app.close()
 })
 
-test('User can create a new transaction', async () => {
+it('Should be possible to create a new transaction', async () => {
   await request(app.server)
     .post('/transactions')
     .send({
