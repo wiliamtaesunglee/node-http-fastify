@@ -1,9 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import request from 'supertest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../src/app'
 
 describe('Transactions routes', async () => {
-  const server = await request(app.server)
+  const server = request(app.server)
   beforeAll(async () => {
     app.ready()
   })
@@ -47,9 +47,11 @@ describe('Transactions routes', async () => {
     const list = await server.get('/transactions').set('Cookie', cookie)
 
     expect(list.body.transactions.length).toBeGreaterThan(0)
-    delete transaction.type
     expect(list.body.transactions).toEqual([
-      expect.objectContaining(transaction),
+      expect.objectContaining({
+        title: transaction.title,
+        amount: transaction.amount,
+      }),
     ])
   })
 })
