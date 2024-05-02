@@ -1,5 +1,5 @@
-import request from 'supertest'
 import { execSync } from 'node:child_process'
+import request from 'supertest'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../src/app'
 
