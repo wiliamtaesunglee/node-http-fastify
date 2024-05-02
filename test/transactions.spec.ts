@@ -50,7 +50,7 @@ describe('Transactions routes', async () => {
 
     const cookie = response.get('Set-Cookie')
 
-    const list = await server.get('/transactions').set('Cookie', cookie)
+    const list = await server.get('/transactions').set('Cookie', cookie!)
 
     expect(list.body.transactions.length).toBeGreaterThan(0)
     expect(list.body.transactions).toEqual([
@@ -59,5 +59,33 @@ describe('Transactions routes', async () => {
         amount: transaction.amount,
       }),
     ])
+  })
+
+  it('Should be able to get a specific transaction', async () => {
+    const transaction = {
+      title: 'New transaction',
+      amount: 4500,
+      type: 'credit',
+    }
+
+    const response = await server.post('/transactions').send(transaction)
+
+    const cookie = response.get('Set-Cookie')
+
+    const list = await server.get('/transactions').set('Cookie', cookie!)
+
+    const transactionId = list.body.transactions[0].id
+
+    const transactionById = await server
+      .get(`/transactions/${transactionId}`)
+      .set('Cookie', cookie as string[])
+      .expect(200)
+
+    expect(transactionById.body.transaction).toEqual(
+      expect.objectContaining({
+        title: transaction.title,
+        amount: transaction.amount,
+      }),
+    )
   })
 })
