@@ -1,4 +1,5 @@
 import request from 'supertest'
+import { execSync } from 'node:child_process'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { app } from '../src/app'
 
@@ -6,6 +7,7 @@ describe('Transactions routes', async () => {
   const server = request(app.server)
   beforeAll(async () => {
     app.ready()
+    execSync('npm run knex migrate:latest')
   })
 
   afterAll(async () => {
